@@ -2,6 +2,7 @@ import json
 import socket
 import sys
 import argparse
+import threading
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -19,15 +20,21 @@ class TicTacToeClient(QMainWindow):
         self.username = username
         self.init_ui()
         self.game_id = None
-        self.player = None  # X or O
+        self.chess = None  # X or O
 
         # connect to the server
         self.host = host
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
+        print(f"{username} has been connected to Server: {host}:{port}.")
+        # start a thread to listen to the server
+        self.listen_thread = threading.Thread(
+            target=self.receive_res, daemon=True
+        )
+        self.listen_thread.start()
 
-        self.match()
+        self.register()
 
     def init_ui(self):
         """initialize the UI components for the board
@@ -50,12 +57,31 @@ class TicTacToeClient(QMainWindow):
                 row.append(button)
             self.buttons.append(row)
     
-    def match(self):
-        request = {
+    def register(self):
+        """send a registration request to the server
+        """
+        req = {
             "username": self.username,
-            "action": "match"
+            "action": "register"
         }
-        self.sock.sendall(json.dumps(request).encode())
+        self.sock.sendall(json.dumps(req).encode())
+    
+    def receive_res(self):
+        """receive and handle the response from the server continuously
+        """
+        while True:
+            res = self.sock.recv(1_000)
+            res = json.loads(res.decode())
+            print(res)
+
+            # handle the response
+            match(res["action"]):
+                case "start_game":
+                    self.game_id = res["game_id"]
+                    self.chess = res["chess"]
+                    self.status_label.setText(
+                        f"{self.username} ({self.chess}) vs. {res["opponent"]}"
+                    )
 
 if __name__ == "__main__":
     # parse command-line arguments
