@@ -16,9 +16,7 @@ class Client:
         print(f"Connected to the server: {host}:{port}.")
 
         # start a thread to listen to the server
-        self.listen_thread = threading.Thread(
-            target=self.receive_res, daemon=True
-        )
+        self.listen_thread = threading.Thread(target=self.receive_res, daemon=True)
         self.listen_thread.start()
 
         self.register()

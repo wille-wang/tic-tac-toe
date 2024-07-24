@@ -18,8 +18,6 @@ if __name__ == "__main__":
     board.show()
 
     # start the client and pass the board instance to it
-    client = Client(
-        host=args.host, port=args.port, username=args.username, board=board
-    )
+    client = Client(host=args.host, port=args.port, username=args.username, board=board)
 
     sys.exit(app.exec())

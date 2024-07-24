@@ -1,4 +1,3 @@
-import argparse
 import socket
 import threading
 import json
@@ -83,14 +82,3 @@ class Server:
                         "is_turn": False,
                     }
                     player_conn[player_o].sendall(json.dumps(res).encode())
-
-
-if __name__ == "__main__":
-    # parse command-line arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--host", default="localhost")
-    parser.add_argument("--port", type=int, default=44444)
-    args = parser.parse_args()
-
-    # start the server
-    server = Server(host=args.host, port=args.port)
