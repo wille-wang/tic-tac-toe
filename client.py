@@ -1,3 +1,5 @@
+import json
+import socket
 import sys
 import argparse
 from PySide6.QtWidgets import (
@@ -19,6 +21,14 @@ class TicTacToeClient(QMainWindow):
         self.game_id = None
         self.player = None  # X or O
 
+        # connect to the server
+        self.host = host
+        self.port = port
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.connect((host, port))
+
+        self.match()
+
     def init_ui(self):
         """initialize the UI components for the board
         """
@@ -39,6 +49,13 @@ class TicTacToeClient(QMainWindow):
                 self.layout.addWidget(button, i+1, j)
                 row.append(button)
             self.buttons.append(row)
+    
+    def match(self):
+        request = {
+            "username": self.username,
+            "action": "match"
+        }
+        self.sock.sendall(json.dumps(request).encode())
 
 if __name__ == "__main__":
     # parse command-line arguments
@@ -50,6 +67,10 @@ if __name__ == "__main__":
 
     # start the GUI application
     app = QApplication(sys.argv)
-    client = TicTacToeClient(args.username, args.host, args.port)
+    client = TicTacToeClient(
+        username=args.username,
+        host=args.host,
+        port=args.port
+    )
     client.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
