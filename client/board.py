@@ -26,6 +26,7 @@ class Board(QMainWindow):
         self.client_res_thread = threading.Thread(target=self.handle_res, daemon=True)
         self.client_res_thread.start()
 
+        # set up the board and register the player
         self.reset_board()
         self.register()
 
@@ -105,7 +106,14 @@ class Board(QMainWindow):
                     self.is_turn = True
 
                     if res["is_end"]:
-                        self.status_label.setText(f"Game over. {res['winner']} wins.")
+                        # self.status_label.setText(f"Game over. {res['winner']} wins.")
+                        if res["winner"] == self.chess:
+                            self.status_label.setText(f"Game over. You won.")
+                        elif res["winner"]:
+                            self.status_label.setText(f"Game over. You lost.")
+                        else:
+                            self.status_label.setText(f"Game over. It's a draw.")
+                        
                         self.is_turn = False
                         for row in self.buttons:
                             for button in row:

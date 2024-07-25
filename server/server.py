@@ -69,8 +69,11 @@ class Server:
         """
         match(req["action"]):
             case "register":
+                # add the player to the queue
                 self.db.player_conn[req["username"]] = conn
                 self.db.waiting_players.put(req["username"])
+
+                # try matching the players
                 if self.db.waiting_players.qsize() <= 1:
                     res = {"action": "ACK"}
                     self.send_res(res, conn)
@@ -105,49 +108,36 @@ class Server:
                 game = self.db.games[req["game_id"]]
                 game.move(x=req["x"], y=req["y"], chess=req["chess"])
                 
-                # TODO: beautify the code
                 # notify the opponent
+                res = {
+                        "action": "move",
+                        "game_id": game.id,
+                        "x": req["x"],
+                        "y": req["y"],
+                        "winner": game.winner,
+                        "is_end": self.db.games[game.id].is_end,
+                    }
                 if req["chess"] == "X":
-                    res = {
-                        "action": "move",
-                        "game_id": game.id,
-                        "x": req["x"],
-                        "y": req["y"],
-                        "chess": "X",
-                        "winner": game.winner,
-                        "is_end": self.db.games[game.id].is_end,
-                    }
-                    self.send_res(res, self.db.player_conn[game.chess_player["O"]])
+                    res["chess"] = "X"
+                    self.send_res(
+                        res=res,
+                        conn=self.db.player_conn[game.chess_player["O"]]
+                    )
+                    # notify the other player if the game is over
                     if game.is_end:
-                        res = {
-                            "action": "move",
-                            "game_id": game.id,
-                            "x": req["x"],
-                            "y": req["y"],
-                            "chess": "X",
-                            "winner": game.winner,
-                            "is_end": self.db.games[game.id].is_end,
-                        }
-                        self.send_res(res, self.db.player_conn[game.chess_player["X"]])
+                        self.send_res(
+                            res=res,
+                            conn=self.db.player_conn[game.chess_player["X"]]
+                        )
                 else:
-                    res = {
-                        "action": "move",
-                        "game_id": game.id,
-                        "x": req["x"],
-                        "y": req["y"],
-                        "chess": "O",
-                        "winner": game.winner,
-                        "is_end": self.db.games[game.id].is_end,
-                    }
-                    self.send_res(res, self.db.player_conn[game.chess_player["X"]])
+                    res["chess"] = "O"
+                    self.send_res(
+                        res=res,
+                        conn=self.db.player_conn[game.chess_player["X"]]
+                    )
+                    # notify the other player if the game is over
                     if game.is_end:
-                        res = {
-                            "action": "move",
-                            "game_id": game.id,
-                            "x": req["x"],
-                            "y": req["y"],
-                            "chess": "O",
-                            "winner": game.winner,
-                            "is_end": self.db.games[game.id].is_end,
-                        }
-                        self.send_res(res, self.db.player_conn[game.chess_player["O"]])
+                        self.send_res(
+                            res=res, 
+                            conn=self.db.player_conn[game.chess_player["O"]]
+                        )
