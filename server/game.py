@@ -1,6 +1,5 @@
 import uuid
 
-
 class Game:
     def __init__(self):
         self.id = str(uuid.uuid4())

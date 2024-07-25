@@ -1,56 +1,44 @@
 import json
 import socket
-import threading
-from board import Board
 
 
 class Client:
-    def __init__(self, host, port, username, board) -> None:
+    def __init__(self, host, port) -> None:
         # connect to the server
         self.host = host
         self.port = port
-        self.username = username
-        self.board = board
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
         print(f"Connected to the server: {host}:{port}.")
 
-        # start a thread to listen to the server
-        self.listen_thread = threading.Thread(target=self.receive_res, daemon=True)
-        self.listen_thread.start()
-
-        self.register()
-
-    def register(self):
-        """send a registration request to the server"""
-        req = {"username": self.username, "action": "register"}
-        self.sock.sendall(json.dumps(req).encode())
-
-    def process_res(self, res: dict):
-        """handle the response from the server
+    def send_req(self, req: dict):
+        """send a request to the server
 
         Args:
-            res (dict): response from the server
+            req (dict): request sent to the server
         """
-        # handle the response
-        match res["action"]:
-            case "start_game":
-                self.game_id = res["game_id"]
-                self.chess = res["chess"]
-                self.board.status_label.setText(
-                    f"{self.username} ({self.chess}) vs. {res['opponent']}"
-                )
-            # TODO: make a move
-
-    def receive_res(self):
-        """receive and handle the response from the server continuously"""
         try:
-            while True:
-                res = self.sock.recv(1_000)
-                res = json.loads(res.decode())
+            self.sock.sendall(json.dumps(req).encode())
+            print(f"Sent request to the server: {req}")
+        except Exception:
+            print(f"Failed to send the request to the server.")
 
-                self.process_res(res=res)
-                print(res)
+    def received_res(self) -> dict:
+        """receive the response from the server
+
+        Returns:
+            dict: decoded response from the servers
+        """
+        try:
+            res = self.sock.recv(1_000)
+            res = json.loads(res.decode())
+            print(f"Received response from the server: {res}")
+            return res
         except json.JSONDecodeError:
             print(f"Disconnected from the server.")
+            self.sock.close()
+            exit(1)
+        except Exception:
+            print(f"Failed to receive the response from the server.")
+            self.sock.close()
             exit(1)

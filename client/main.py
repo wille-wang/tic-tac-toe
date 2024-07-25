@@ -12,12 +12,11 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=44444)
     args = parser.parse_args()
 
+    # start the client and pass the board instance to it
+    client = Client(host=args.host, port=args.port)
+
     # start the GUI application
     app = QApplication(sys.argv)
-    board = Board(username=args.username)
+    board = Board(username=args.username, client=client)
     board.show()
-
-    # start the client and pass the board instance to it
-    client = Client(host=args.host, port=args.port, username=args.username, board=board)
-
     sys.exit(app.exec())
