@@ -9,8 +9,10 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from client import Client
 
+
 class Board(QMainWindow):
     """GUI for the Tic-Tac-Toe game"""
+
     def __init__(self, username, client: Client) -> None:
         super().__init__()
         # game information
@@ -20,9 +22,7 @@ class Board(QMainWindow):
         self.client = client
 
         # Start a thread to handle server responses
-        self.client_res_thread = threading.Thread(
-            target=self.handle_res, daemon=True
-        )
+        self.client_res_thread = threading.Thread(target=self.handle_res, daemon=True)
         self.client_res_thread.start()
 
         self.reset_board()
@@ -44,16 +44,13 @@ class Board(QMainWindow):
                 button.setFixedSize(100, 100)
                 button.setFont(self.font())
                 button.clicked.connect(lambda _, x=x, y=y: self.move(x, y))
-                self.layout.addWidget(button, x+1, y)
+                self.layout.addWidget(button, x + 1, y)
                 row.append(button)
             self.buttons.append(row)
-    
+
     def register(self) -> None:
         """register the player to the server"""
-        self.client.send_req(req={
-            "username": self.username,
-            "action": "register"
-        })
+        self.client.send_req(req={"username": self.username, "action": "register"})
         self.status_label.setText(f"Connected. Waiting for an opponent ...")
 
     def move(self, x: int, y: int) -> None:
@@ -67,13 +64,10 @@ class Board(QMainWindow):
             self.buttons[x][y].setText(self.chess)
             self.buttons[x][y].setEnabled(False)
 
-        self.client.send_req(req={
-            "game_id": self.game_id,
-            "action": "move",
-            "x": x,
-            "y": y
-        })
-    
+        self.client.send_req(
+            req={"game_id": self.game_id, "action": "move", "x": x, "y": y}
+        )
+
     def handle_res(self):
         """handle the response from the server and modify the board
 

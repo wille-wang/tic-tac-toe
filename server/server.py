@@ -12,7 +12,7 @@ class Server:
         self.db = Database()
         self.start_multithreaded_server()
 
-    def start_multithreaded_server(self)
+    def start_multithreaded_server(self):
         """start the multithreaded server"""
         with socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM) as s:
             s.bind((self.host, self.port))
@@ -29,7 +29,7 @@ class Server:
                 thread.start()
                 print(f"Connected to {addr}.")
 
-    def received_req(self, conn: socket.socket, addr: str):
+    def receive_req(self, conn: socket.socket, addr: str):
         """receive and handle the request from the client
 
         Args:
@@ -46,7 +46,7 @@ class Server:
 
         except json.JSONDecodeError:
             print(f"{conn} disconnected.")
-    
+
     def send_res(self, res: dict, conn: socket.socket):
         """send the response to the client
 
@@ -58,7 +58,7 @@ class Server:
             conn.sendall(json.dumps(res).encode())
         except Exception:
             print(f"Failed to send the response to the client.")
-    
+
     def handle_req(self, req: json, conn: socket.socket):
         """handle the request from the client
 

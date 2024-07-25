@@ -8,8 +8,12 @@ class Client:
         self.host = host
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((host, port))
-        print(f"Connected to the server: {host}:{port}.")
+        try:
+            self.sock.connect((self.host, self.port))
+            print(f"Connected to the server ({self.host}:{self.port}).")
+        except ConnectionRefusedError:
+            print(f"Connection refused ({self.host}:{self.port}).")
+            exit(1)
 
     def send_req(self, req: dict):
         """send a request to the server
