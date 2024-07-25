@@ -75,7 +75,8 @@ class Board(QMainWindow):
                     "username": self.username,
                     "action": "move",
                     "x": x,
-                    "y": y}
+                    "y": y
+                }
             )
 
     def handle_res(self):
@@ -102,3 +103,10 @@ class Board(QMainWindow):
                     self.buttons[x][y].setText(res["chess"])
                     self.buttons[x][y].setEnabled(False)
                     self.is_turn = True
+
+                    if res["is_end"]:
+                        self.status_label.setText(f"Game over. {res['winner']} wins.")
+                        self.is_turn = False
+                        for row in self.buttons:
+                            for button in row:
+                                button.setEnabled(False)

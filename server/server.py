@@ -46,6 +46,7 @@ class Server:
 
         except json.JSONDecodeError:
             print(f"{conn} disconnected.")
+            # TODO: the opponent should be notified
 
     def send_res(self, res: dict, conn: socket.socket):
         """send the response to the client
@@ -88,6 +89,7 @@ class Server:
                         "opponent": player_o,
                         "chess": "X",
                         "is_turn": True,
+                        "is_end": self.db.games[game.id].is_end,
                     }
                     self.send_res(res, self.db.player_conn[player_x])
                     res = {
@@ -96,11 +98,15 @@ class Server:
                         "opponent": player_x,
                         "chess": "O",
                         "is_turn": False,
+                        "is_end": self.db.games[game.id].is_end,
                     }
                     self.send_res(res, self.db.player_conn[player_o])
             case "move":
                 game = self.db.games[req["game_id"]]
                 game.move(x=req["x"], y=req["y"], chess=req["chess"])
+                
+                # TODO: beautify the code
+                # notify the opponent
                 if req["chess"] == "X":
                     res = {
                         "action": "move",
@@ -108,8 +114,21 @@ class Server:
                         "x": req["x"],
                         "y": req["y"],
                         "chess": "X",
+                        "winner": game.winner,
+                        "is_end": self.db.games[game.id].is_end,
                     }
                     self.send_res(res, self.db.player_conn[game.chess_player["O"]])
+                    if game.is_end:
+                        res = {
+                            "action": "move",
+                            "game_id": game.id,
+                            "x": req["x"],
+                            "y": req["y"],
+                            "chess": "X",
+                            "winner": game.winner,
+                            "is_end": self.db.games[game.id].is_end,
+                        }
+                        self.send_res(res, self.db.player_conn[game.chess_player["X"]])
                 else:
                     res = {
                         "action": "move",
@@ -117,5 +136,18 @@ class Server:
                         "x": req["x"],
                         "y": req["y"],
                         "chess": "O",
+                        "winner": game.winner,
+                        "is_end": self.db.games[game.id].is_end,
                     }
                     self.send_res(res, self.db.player_conn[game.chess_player["X"]])
+                    if game.is_end:
+                        res = {
+                            "action": "move",
+                            "game_id": game.id,
+                            "x": req["x"],
+                            "y": req["y"],
+                            "chess": "O",
+                            "winner": game.winner,
+                            "is_end": self.db.games[game.id].is_end,
+                        }
+                        self.send_res(res, self.db.player_conn[game.chess_player["O"]])

@@ -7,7 +7,8 @@ class Game:
         self.chess_player = {"X": None, "O": None}
         self.board = [" " for _ in range(9)]
         self.current_turn = "X"
-        self.winner = None
+        self.is_end = False
+        self.winner = False
 
     def set_players(self, player_x: str, player_o: str):
         # TODO: add pseudorandomness
@@ -22,10 +23,9 @@ class Game:
             y (int): index of the column
             chess (str): "X" or "O"
         """
-        if self.current_turn != chess and self.board[x * 3 + y] != " ":
-            self.board[x*3 + y] = chess
-            self.check_board()
-            self.current_turn = "O" if chess == "X" else "X"
+        self.board[x*3 + y] = chess
+        self.check_board()
+        self.current_turn = "O" if chess == "X" else "X"
 
     def check_board(self):
         """check if there is a winner or a draw"""
@@ -42,9 +42,12 @@ class Game:
         for a, b, c in win_conditions:
             if self.board[a] == self.board[b] == self.board[c] != " ":
                 self.winner = self.board[a]
+                self.is_end = True
                 return
+        # check for a draw
         if all(cell != " " for cell in self.board):
-            self.winner = "Draw"
+            self.is_end = True
+            self.winner = False
 
     def get_game_state(self):
         """get the current state of the game
