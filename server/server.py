@@ -66,7 +66,7 @@ class Server:
             req (json): decoded request from the client
             conn (socket.socket): connection object corresponding to each client
         """
-        match (req["action"]):
+        match(req["action"]):
             case "register":
                 self.db.player_conn[req["username"]] = conn
                 self.db.waiting_players.put(req["username"])
@@ -98,3 +98,24 @@ class Server:
                         "is_turn": False,
                     }
                     self.send_res(res, self.db.player_conn[player_o])
+            case "move":
+                game = self.db.games[req["game_id"]]
+                game.move(x=req["x"], y=req["y"], chess=req["chess"])
+                if req["chess"] == "X":
+                    res = {
+                        "action": "move",
+                        "game_id": game.id,
+                        "x": req["x"],
+                        "y": req["y"],
+                        "chess": "X",
+                    }
+                    self.send_res(res, self.db.player_conn[game.chess_player["O"]])
+                else:
+                    res = {
+                        "action": "move",
+                        "game_id": game.id,
+                        "x": req["x"],
+                        "y": req["y"],
+                        "chess": "O",
+                    }
+                    self.send_res(res, self.db.player_conn[game.chess_player["X"]])

@@ -14,12 +14,18 @@ class Game:
         self.chess_player["X"] = player_x
         self.chess_player["O"] = player_o
 
-    def move(self, player, cell):
-        if self.board[cell] == " " and player == self.current_turn:
-            self.board[cell] = player
-            self.current_turn = "O" if player == "X" else "X"
+    def move(self, x: int, y: int, chess: str):
+        """make a move on the board
+
+        Args:
+            x (int): index of the row
+            y (int): index of the column
+            chess (str): "X" or "O"
+        """
+        if self.current_turn != chess and self.board[x * 3 + y] != " ":
+            self.board[x*3 + y] = chess
             self.check_board()
-            return True
+            self.current_turn = "O" if chess == "X" else "X"
 
     def check_board(self):
         """check if there is a winner or a draw"""

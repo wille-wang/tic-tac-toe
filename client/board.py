@@ -20,6 +20,7 @@ class Board(QMainWindow):
         self.game_id = None
         self.chess = None  # X or O
         self.client = client
+        self.is_turn = False
 
         # Start a thread to handle server responses
         self.client_res_thread = threading.Thread(target=self.handle_res, daemon=True)
@@ -50,7 +51,9 @@ class Board(QMainWindow):
 
     def register(self) -> None:
         """register the player to the server"""
-        self.client.send_req(req={"username": self.username, "action": "register"})
+        self.client.send_req(
+            req={"username": self.username, "action": "register"}
+        )
         self.status_label.setText(f"Connected. Waiting for an opponent ...")
 
     def move(self, x: int, y: int) -> None:
@@ -60,13 +63,20 @@ class Board(QMainWindow):
             x (int): index of the row
             y (int): index of the column
         """
-        if self.chess:
+        if self.chess and self.is_turn:
             self.buttons[x][y].setText(self.chess)
             self.buttons[x][y].setEnabled(False)
+            self.is_turn = False
 
-        self.client.send_req(
-            req={"game_id": self.game_id, "action": "move", "x": x, "y": y}
-        )
+            self.client.send_req(
+                req={
+                    "game_id": self.game_id,
+                    "chess": self.chess,
+                    "username": self.username,
+                    "action": "move",
+                    "x": x,
+                    "y": y}
+            )
 
     def handle_res(self):
         """handle the response from the server and modify the board
@@ -84,3 +94,11 @@ class Board(QMainWindow):
                     self.status_label.setText(
                         f"{self.username} ({self.chess}) vs. {res['opponent']}"
                     )
+
+                    if self.chess == "X":
+                        self.is_turn = res["is_turn"]
+                case "move":
+                    x, y = res["x"], res["y"]
+                    self.buttons[x][y].setText(res["chess"])
+                    self.buttons[x][y].setEnabled(False)
+                    self.is_turn = True
