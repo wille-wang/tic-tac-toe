@@ -53,7 +53,10 @@ class Board(QMainWindow):
     def register(self) -> None:
         """register the player to the server"""
         self.client.send_req(
-            req={"username": self.username, "action": "register"}
+            req={
+                    "action": "register",
+                    "username": self.username,
+                }
         )
         self.status_label.setText(f"Connected. Waiting for an opponent ...")
 
@@ -71,10 +74,10 @@ class Board(QMainWindow):
 
             self.client.send_req(
                 req={
+                    "action": "move",
+                    "username": self.username,
                     "game_id": self.game_id,
                     "chess": self.chess,
-                    "username": self.username,
-                    "action": "move",
                     "x": x,
                     "y": y
                 }
@@ -101,13 +104,16 @@ class Board(QMainWindow):
                         self.is_turn = res["is_turn"]
                 case "move":
                     x, y = res["x"], res["y"]
-                    self.buttons[x][y].setText(res["chess"])
+                    if self.chess == "X":
+                        self.buttons[x][y].setText("O")
+                    else:
+                        self.buttons[x][y].setText("X")
                     self.buttons[x][y].setEnabled(False)
                     self.is_turn = True
 
                     if res["is_end"]:
-                        # self.status_label.setText(f"Game over. {res['winner']} wins.")
                         if res["winner"] == self.chess:
+                            self.buttons[x][y].setText(self.chess)
                             self.status_label.setText(f"Game over. You won.")
                         elif res["winner"]:
                             self.status_label.setText(f"Game over. You lost.")

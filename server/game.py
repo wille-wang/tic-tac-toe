@@ -2,13 +2,15 @@ import uuid
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, player_x: str, player_o: str) -> None:
         self.id = str(uuid.uuid4())
         self.chess_player = {"X": None, "O": None}
         self.board = [" " for _ in range(9)]
         self.current_turn = "X"
         self.is_end = False
-        self.winner = False
+        self.winner = None
+
+        self.set_players(player_x=player_x, player_o=player_o)
 
     def set_players(self, player_x: str, player_o: str):
         # TODO: add pseudorandomness
@@ -48,15 +50,3 @@ class Game:
         if all(cell != " " for cell in self.board):
             self.is_end = True
             self.winner = False
-
-    def get_game_state(self):
-        """get the current state of the game
-
-        Returns:
-            dict: current game state of the game
-        """
-        return {
-            "board": self.board,
-            "current_turn": self.current_turn,
-            "winner": self.winner,
-        }
