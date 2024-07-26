@@ -4,7 +4,10 @@ This repository aims to build a distributed Tic-Tac-Toe game, which features a g
 
 The server maintains state in-memory, without storing information in persistent storage.
 
+![GUI](/img/gui.png)
+
 ## Components
+
 - **client side**
   - `main.py`: entry point of the server side
   - `board.py`: contains the `Board` class that provides the GUI for the Tic-Tac-Toe game, including game board interaction and status updates
