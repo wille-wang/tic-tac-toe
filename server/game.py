@@ -10,14 +10,14 @@ class Game:
         self.is_end = False
         self.winner = None
 
-        self.set_players(player_x=player_x, player_o=player_o)
+        self._set_players(player_x=player_x, player_o=player_o)
 
-    def set_players(self, player_x: str, player_o: str):
+    def _set_players(self, player_x: str, player_o: str) -> None:
         # TODO: add pseudorandomness
         self.chess_player["X"] = player_x
         self.chess_player["O"] = player_o
 
-    def move(self, x: int, y: int, chess: str):
+    def move(self, x: int, y: int, chess: str) -> None:
         """make a move on the board
 
         Args:
@@ -25,11 +25,11 @@ class Game:
             y (int): index of the column
             chess (str): "X" or "O"
         """
-        self.board[x*3 + y] = chess
-        self.check_board()
+        self.board[x * 3 + y] = chess
+        self._check_board()
         self.current_turn = "O" if chess == "X" else "X"
 
-    def check_board(self):
+    def _check_board(self) -> None:
         """check if there is a winner or a draw"""
         win_conditions = [
             (0, 1, 2),

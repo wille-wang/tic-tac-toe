@@ -15,7 +15,7 @@ class Client:
             print(f"Connection refused ({self.host}:{self.port}).")
             exit(1)
 
-    def send_req(self, req: dict):
+    def send_req(self, req: dict) -> None:
         """send a request to the server
 
         Args:

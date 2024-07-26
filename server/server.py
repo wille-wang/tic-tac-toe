@@ -2,17 +2,16 @@ import socket
 import threading
 import json
 from database import Database
-from game import Game
 
 
 class Server:
-    def __init__(self, host, port):
+    def __init__(self, host, port) -> None:
         self.host = host
         self.port = port
         self.db = Database()
-        self.start_multithreaded_server()
+        self._start_multithreaded_server()
 
-    def start_multithreaded_server(self):
+    def _start_multithreaded_server(self) -> None:
         """start the multithreaded server"""
         with socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM) as s:
             s.bind((self.host, self.port))
@@ -23,13 +22,13 @@ class Server:
             while True:
                 conn, addr = s.accept()
                 thread = threading.Thread(
-                    target=self.receive_req,
+                    target=self._receive_req,
                     args=(conn, addr),
                 )
                 thread.start()
                 print(f"Connected to {addr}.")
 
-    def receive_req(self, conn: socket.socket, addr: str):
+    def _receive_req(self, conn: socket.socket, addr: str) -> None:
         """receive and handle the request from the client
 
         Args:
@@ -42,13 +41,13 @@ class Server:
                 req = conn.recv(1_000)
                 req = json.loads(req.decode())
                 print(req)
-                self.handle_req(req=req, conn=conn)
+                self._handle_req(req=req, conn=conn)
 
         except json.JSONDecodeError:
             print(f"{conn} disconnected.")
             # TODO: notify the opponent
 
-    def send_res(self, res: dict, conn: socket.socket):
+    def _send_res(self, res: dict, conn: socket.socket) -> None:
         """send the response to the client
 
         Args:
@@ -60,76 +59,64 @@ class Server:
         except Exception:
             print(f"Failed to send the response to the client.")
 
-    def handle_req(self, req: json, conn: socket.socket):
+    def _handle_req(self, req: json, conn: socket.socket) -> None:
         """handle the request from the client
 
         Args:
             req (json): decoded request from the client
             conn (socket.socket): connection object corresponding to each client
         """
-        match(req["action"]):
+        match (req["action"]):
             case "register":
-                # add the player to the queue
-                self.db.player_conn[req["username"]] = conn
-                self.db.waiting_players.put(req["username"])
-
-                if self.db.waiting_players.qsize() >= 2:
-                    # start a new game if there are two players in the queue
-                    player_x = self.db.waiting_players.get()
-                    player_o = self.db.waiting_players.get()
-                    game = Game(player_x=player_x, player_o=player_o)
-                    self.db.games[game.id] = game
-
-                    # notify both players
+                self.db.add_player(username=req["username"], conn=conn)
+                game_id, player_x, player_o = self.db.match()
+                # notify both players
+                if game_id is not None:
                     res = {
                         "action": "start",
-                        "game_id": game.id,
+                        "game_id": game_id,
                         "opponent": player_o,
                         "chess": "X",
                         "is_turn": True,
                     }
-                    self.send_res(res, self.db.player_conn[player_x])
+                    self._send_res(res, self.db.player_conn[player_x])
                     res = {
                         "action": "start",
-                        "game_id": game.id,
+                        "game_id": game_id,
                         "opponent": player_x,
                         "chess": "O",
                     }
-                    self.send_res(res, self.db.player_conn[player_o])
+                    self._send_res(res, self.db.player_conn[player_o])
             case "move":
                 game = self.db.games[req["game_id"]]
                 game.move(x=req["x"], y=req["y"], chess=req["chess"])
-                
+
                 # notify the opponent
                 res = {
-                        "action": "move",
-                        "x": req["x"],
-                        "y": req["y"],
-                        "winner": game.winner,
-                        "is_end": self.db.games[game.id].is_end,
-                    }
+                    "action": "move",
+                    "x": req["x"],
+                    "y": req["y"],
+                    "winner": game.winner,
+                    "is_end": self.db.games[game.id].is_end,
+                }
                 if req["chess"] == "X":
-                    self.send_res(
-                        res=res,
-                        conn=self.db.player_conn[game.chess_player["O"]]
+                    self._send_res(
+                        res=res, conn=self.db.player_conn[game.chess_player["O"]]
                     )
                     # notify the other player if the game is over
                     if game.is_end:
-                        self.send_res(
-                            res=res,
-                            conn=self.db.player_conn[game.chess_player["X"]]
+                        self._send_res(
+                            res=res, conn=self.db.player_conn[game.chess_player["X"]]
                         )
                         self.db.games.pop(game.id)
                 else:
-                    self.send_res(
-                        res=res,
-                        conn=self.db.player_conn[game.chess_player["X"]]
+                    self._send_res(
+                        res=res, conn=self.db.player_conn[game.chess_player["X"]]
                     )
                     # notify the other player if the game is over
                     if game.is_end:
-                        self.send_res(
-                            res=res, 
-                            conn=self.db.player_conn[game.chess_player["O"]]
+                        self._send_res(
+                            res=res, conn=self.db.player_conn[game.chess_player["O"]]
                         )
                         self.db.games.pop(game.id)
             case "exit":
@@ -140,18 +127,16 @@ class Server:
                     game = self.db.games[req["game_id"]]
 
                     game.winner = "O" if req["chess"] == "X" else "X"
-                    res = {
-                        "action": "surrender"
-                    }
+                    res = {"action": "surrender"}
                     if req["chess"] == "X":
-                        self.send_res(
-                            res=res,
-                            conn=self.db.player_conn[game.chess_player["O"]]
+                        self._send_res(
+                            res=res, conn=self.db.player_conn[game.chess_player["O"]]
                         )
+                        self.db.remove_player(game.chess_player["X"])
                     else:
-                        self.send_res(
-                            res=res,
-                            conn=self.db.player_conn[game.chess_player["X"]]
+                        self._send_res(
+                            res=res, conn=self.db.player_conn[game.chess_player["X"]]
                         )
-                    self.db.games.pop(game.id)
+                        self.db.remove_player(game.chess_player["O"])
+                    self.db.remove_game(req["game_id"])
                 print(f"{req['username']} disconnected.")

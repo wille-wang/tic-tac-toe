@@ -23,14 +23,14 @@ class Board(QMainWindow):
         self.is_turn = False
 
         # Start a thread to handle server responses
-        self.client_res_thread = threading.Thread(target=self.handle_res, daemon=True)
+        self.client_res_thread = threading.Thread(target=self._handle_res, daemon=True)
         self.client_res_thread.start()
 
         # set up the board and register the player
-        self.reset_board()
-        self.register()
+        self._reset_board()
+        self._register()
 
-    def reset_board(self) -> None:
+    def _reset_board(self) -> None:
         """reset the board to the initial state"""
         self.setWindowTitle(f"Tic-Tac-Toe: {self.username}")
         self.central_widget = QWidget()
@@ -46,7 +46,7 @@ class Board(QMainWindow):
                 button.setEnabled(True)
                 button.setFixedSize(100, 100)
                 button.setFont(self.font())
-                button.clicked.connect(lambda _, x=x, y=y: self.move(x, y))
+                button.clicked.connect(lambda _, x=x, y=y: self._move(x, y))
                 self.layout.addWidget(button, x + 1, y)
                 row.append(button)
             self.buttons.append(row)
@@ -54,27 +54,28 @@ class Board(QMainWindow):
         # rematch button
         self.rematch_button = QPushButton("Rematch")
         self.rematch_button.setFixedSize(100, 50)
-        self.rematch_button.clicked.connect(self.rematch)
+        self.rematch_button.clicked.connect(self._rematch)
         self.layout.addWidget(self.rematch_button, 4, 0, 1, 1)
 
         # exit button
         self.exit_button = QPushButton("Exit")
         self.exit_button.setFixedSize(100, 50)
-        self.exit_button.clicked.connect(self.exit)
+        self.exit_button.clicked.connect(self._exit)
         self.layout.addWidget(self.exit_button, 4, 2, 1, 1)
 
-    def register(self) -> None:
+    def _register(self) -> None:
         """register the player to the server"""
         self.client.send_req(
             req={
-                    "action": "register",
-                    "username": self.username,
-                }
+                "action": "register",
+                "username": self.username,
+            }
         )
-        self.reset_board()
+        self._reset_board()
+        self.rematch_button.setEnabled(False)
         self.status_label.setText(f"Connected. Waiting for an opponent ...")
 
-    def move(self, x: int, y: int) -> None:
+    def _move(self, x: int, y: int) -> None:
         """make a move on the board
 
         Args:
@@ -93,11 +94,11 @@ class Board(QMainWindow):
                     "game_id": self.game_id,
                     "chess": self.chess,
                     "x": x,
-                    "y": y
+                    "y": y,
                 }
             )
 
-    def handle_res(self):
+    def _handle_res(self) -> None:
         """handle the response from the server and modify the board
 
         Args:
@@ -133,23 +134,26 @@ class Board(QMainWindow):
                             self.status_label.setText(f"Game over. You lost.")
                         else:
                             self.status_label.setText(f"Game over. It's a draw.")
-                        
+
                         self.is_turn = False
                         for row in self.buttons:
                             for button in row:
                                 button.setEnabled(False)
+                        self.rematch_button.setEnabled(True)
                 case "surrender":
                     self.status_label.setText(f"The opponent surrendered. You won!")
                     self.is_turn = False
                     for row in self.buttons:
                         for button in row:
                             button.setEnabled(False)
-                    
-        
-    def rematch(self) -> None:
-        self.register()
-    
-    def exit(self) -> None:
+                    self.rematch_button.setEnabled(True)
+
+    def _rematch(self) -> None:
+        """play another game"""
+        self._register()
+
+    def _exit(self) -> None:
+        """exit the game"""
         req = {
             "action": "exit",
             "username": self.username,
