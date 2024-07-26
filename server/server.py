@@ -119,6 +119,7 @@ class Server:
                             res=res,
                             conn=self.db.player_conn[game.chess_player["X"]]
                         )
+                        self.db.games.pop(game.id)
                 else:
                     self.send_res(
                         res=res,
@@ -130,3 +131,27 @@ class Server:
                             res=res, 
                             conn=self.db.player_conn[game.chess_player["O"]]
                         )
+                        self.db.games.pop(game.id)
+            case "exit":
+                # remove the player from the queue if he is waiting
+                if self.db.waiting_players.qsize() > 0:
+                    self.db.waiting_players.get()
+                else:
+                    game = self.db.games[req["game_id"]]
+
+                    game.winner = "O" if req["chess"] == "X" else "X"
+                    res = {
+                        "action": "surrender"
+                    }
+                    if req["chess"] == "X":
+                        self.send_res(
+                            res=res,
+                            conn=self.db.player_conn[game.chess_player["O"]]
+                        )
+                    else:
+                        self.send_res(
+                            res=res,
+                            conn=self.db.player_conn[game.chess_player["X"]]
+                        )
+                    self.db.games.pop(game.id)
+                print(f"{req['username']} disconnected.")

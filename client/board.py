@@ -43,12 +43,25 @@ class Board(QMainWindow):
             row = []
             for y in range(3):
                 button = QPushButton(" ")
+                button.setEnabled(True)
                 button.setFixedSize(100, 100)
                 button.setFont(self.font())
                 button.clicked.connect(lambda _, x=x, y=y: self.move(x, y))
                 self.layout.addWidget(button, x + 1, y)
                 row.append(button)
             self.buttons.append(row)
+
+        # rematch button
+        self.rematch_button = QPushButton("Rematch")
+        self.rematch_button.setFixedSize(100, 50)
+        self.rematch_button.clicked.connect(self.rematch)
+        self.layout.addWidget(self.rematch_button, 4, 0, 1, 1)
+
+        # exit button
+        self.exit_button = QPushButton("Exit")
+        self.exit_button.setFixedSize(100, 50)
+        self.exit_button.clicked.connect(self.exit)
+        self.layout.addWidget(self.exit_button, 4, 2, 1, 1)
 
     def register(self) -> None:
         """register the player to the server"""
@@ -58,6 +71,7 @@ class Board(QMainWindow):
                     "username": self.username,
                 }
         )
+        self.reset_board()
         self.status_label.setText(f"Connected. Waiting for an opponent ...")
 
     def move(self, x: int, y: int) -> None:
@@ -114,7 +128,7 @@ class Board(QMainWindow):
                     if res["is_end"]:
                         if res["winner"] == self.chess:
                             self.buttons[x][y].setText(self.chess)
-                            self.status_label.setText(f"Game over. You won.")
+                            self.status_label.setText(f"Game over. You won!")
                         elif res["winner"]:
                             self.status_label.setText(f"Game over. You lost.")
                         else:
@@ -124,3 +138,23 @@ class Board(QMainWindow):
                         for row in self.buttons:
                             for button in row:
                                 button.setEnabled(False)
+                case "surrender":
+                    self.status_label.setText(f"The opponent surrendered. You won!")
+                    self.is_turn = False
+                    for row in self.buttons:
+                        for button in row:
+                            button.setEnabled(False)
+                    
+        
+    def rematch(self) -> None:
+        self.register()
+    
+    def exit(self) -> None:
+        req = {
+            "action": "exit",
+            "username": self.username,
+            "game_id": self.game_id,
+            "chess": self.chess,
+        }
+        self.client.send_req(req)
+        exit(0)
