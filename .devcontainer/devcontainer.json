@@ -5,10 +5,12 @@
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
   "image": "mcr.microsoft.com/devcontainers/base:bullseye",
   "features": {
-    "ghcr.io/devcontainers/features/python:1": {}
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.10"
+    }
   },
 
-  "postCreateCommand": "pip3 install -r requirements.txt"
+  "postCreateCommand": "chmod +x .devcontainer/setup.sh && ./.devcontainer/setup.sh",
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   // "features": {},
