@@ -9,21 +9,23 @@ class Database:
         self.games = {}  # id-game pairs
 
     def add_player(self, username: str, conn) -> None:
-        """add a player to the database
+        """Add a player to the database
 
         Args:
             username (str): username of the player
             conn (socket.socket): connection object corresponding to the player
         """
+
         self.player_conn[username] = conn
         self.waiting_players.put(username)
 
     def match(self) -> tuple[str, str, str]:
-        """match two players if there are enough players
+        """Match two players if there are enough players
 
         Returns:
             tuple[str, str, str]: game id, player_x, player_o
         """
+
         if self.waiting_players.qsize() >= 2:
             player_x = self.waiting_players.get()
             player_o = self.waiting_players.get()
@@ -34,17 +36,19 @@ class Database:
             return None, None, None
 
     def remove_player(self, username: str) -> None:
-        """remove a player from the database
+        """Remove a player from the database
 
         Args:
             username (str): username of the player
         """
+        
         self.player_conn.pop(username)
 
     def remove_game(self, id: str) -> None:
-        """remove a game from the database
+        """Remove a game from the database
 
         Args:
             id (str): game id
         """
+
         self.games.pop(id)

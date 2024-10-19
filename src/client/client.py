@@ -4,7 +4,8 @@ import socket
 
 class Client:
     def __init__(self, host, port) -> None:
-        # connect to the server
+        """Initialize the client and connect to the server"""
+
         self.host = host
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -16,11 +17,12 @@ class Client:
             exit(1)
 
     def send_req(self, req: dict) -> None:
-        """send a request to the server
+        """Send a request to the server
 
         Args:
             req (dict): request sent to the server
         """
+
         try:
             self.sock.sendall(json.dumps(req).encode())
             print(f"Sent request to the server: {req}")
@@ -28,11 +30,12 @@ class Client:
             print(f"Failed to send the request to the server.")
 
     def received_res(self) -> dict:
-        """receive the response from the server
+        """Receive the response from the server
 
         Returns:
             dict: decoded response from the servers
         """
+        
         try:
             res = self.sock.recv(1_000)
             res = json.loads(res.decode())

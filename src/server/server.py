@@ -12,7 +12,8 @@ class Server:
         self._start_multithreaded_server()
 
     def _start_multithreaded_server(self) -> None:
-        """start the multithreaded server"""
+        """Start the multithreaded server"""
+
         with socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM) as s:
             s.bind((self.host, self.port))
             s.listen()
@@ -29,13 +30,14 @@ class Server:
                 print(f"Connected to {addr}.")
 
     def _receive_req(self, conn: socket.socket, addr: str) -> None:
-        """receive and handle the request from the client
+        """Receive and handle the request from the client
 
         Args:
             conn (socket.socket): connection object corresponding to each client
             addr (str): address of the client
         """
-        # receive the request from the client
+
+        # Receive the request from the client
         try:
             while True:
                 req = conn.recv(1_000)
@@ -48,29 +50,31 @@ class Server:
             # TODO: notify the opponent
 
     def _send_res(self, res: dict, conn: socket.socket) -> None:
-        """send the response to the client
+        """Send the response to the client
 
         Args:
             res (dict): response to be sent to the client
             conn (socket.socket): connection object corresponding to each client
         """
+
         try:
             conn.sendall(json.dumps(res).encode())
         except Exception:
             print(f"Failed to send the response to the client.")
 
     def _handle_req(self, req: json, conn: socket.socket) -> None:
-        """handle the request from the client
+        """Handle the request from the client
 
         Args:
             req (json): decoded request from the client
             conn (socket.socket): connection object corresponding to each client
         """
+
         match (req["action"]):
             case "register":
                 self.db.add_player(username=req["username"], conn=conn)
                 game_id, player_x, player_o = self.db.match()
-                # notify both players
+                # Notify both players
                 if game_id is not None:
                     res = {
                         "action": "start",
@@ -90,8 +94,7 @@ class Server:
             case "move":
                 game = self.db.games[req["game_id"]]
                 game.move(x=req["x"], y=req["y"], chess=req["chess"])
-
-                # notify the opponent
+                # Notify the opponent
                 res = {
                     "action": "move",
                     "x": req["x"],
@@ -103,7 +106,7 @@ class Server:
                     self._send_res(
                         res=res, conn=self.db.player_conn[game.chess_player["O"]]
                     )
-                    # notify the other player if the game is over
+                    # Notify the other player if the game is over
                     if game.is_end:
                         self._send_res(
                             res=res, conn=self.db.player_conn[game.chess_player["X"]]
@@ -113,14 +116,14 @@ class Server:
                     self._send_res(
                         res=res, conn=self.db.player_conn[game.chess_player["X"]]
                     )
-                    # notify the other player if the game is over
+                    # Notify the other player if the game is over
                     if game.is_end:
                         self._send_res(
                             res=res, conn=self.db.player_conn[game.chess_player["O"]]
                         )
                         self.db.games.pop(game.id)
             case "exit":
-                # remove the player from the queue if he is waiting
+                # Remove the player from the queue if he is waiting
                 if self.db.waiting_players.qsize() > 0:
                     self.db.waiting_players.get()
                 else:

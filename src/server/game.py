@@ -18,19 +18,21 @@ class Game:
         self.chess_player["O"] = player_o
 
     def move(self, x: int, y: int, chess: str) -> None:
-        """make a move on the board
+        """Make a move on the board
 
         Args:
             x (int): index of the row
             y (int): index of the column
             chess (str): "X" or "O"
         """
+        
         self.board[x * 3 + y] = chess
         self._check_board()
         self.current_turn = "O" if chess == "X" else "X"
 
     def _check_board(self) -> None:
-        """check if there is a winner or a draw"""
+        """Check if there is a winner or a draw"""
+
         win_conditions = [
             (0, 1, 2),
             (3, 4, 5),
@@ -46,7 +48,7 @@ class Game:
                 self.winner = self.board[a]
                 self.is_end = True
                 return
-        # check for a draw
+        # Check for a draw
         if all(cell != " " for cell in self.board):
             self.is_end = True
             self.winner = False

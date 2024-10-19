@@ -26,12 +26,13 @@ class Board(QMainWindow):
         self.client_res_thread = threading.Thread(target=self._handle_res, daemon=True)
         self.client_res_thread.start()
 
-        # set up the board and register the player
+        # Set up the board and register the player
         self._reset_board()
         self._register()
 
     def _reset_board(self) -> None:
-        """reset the board to the initial state"""
+        """Reset the board to the initial state"""
+
         self.setWindowTitle(f"Tic-Tac-Toe: {self.username}")
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -64,7 +65,8 @@ class Board(QMainWindow):
         self.layout.addWidget(self.exit_button, 4, 2, 1, 1)
 
     def _register(self) -> None:
-        """register the player to the server"""
+        """Register the player to the server"""
+
         self.client.send_req(
             req={
                 "action": "register",
@@ -76,12 +78,13 @@ class Board(QMainWindow):
         self.status_label.setText(f"Connected. Waiting for an opponent ...")
 
     def _move(self, x: int, y: int) -> None:
-        """make a move on the board
+        """Make a move on the board
 
         Args:
             x (int): index of the row
             y (int): index of the column
         """
+
         if self.chess and self.is_turn:
             self.buttons[x][y].setText(self.chess)
             self.buttons[x][y].setEnabled(False)
@@ -99,14 +102,15 @@ class Board(QMainWindow):
             )
 
     def _handle_res(self) -> None:
-        """handle the response from the server and modify the board
+        """Handle the response from the server and modify the board
 
         Args:
             res (dict): response from the server
         """
+        
         while True:
             res = self.client.received_res()
-            # handle the response
+            # Handle the response
             match res["action"]:
                 case "start":
                     self.game_id = res["game_id"]
@@ -149,11 +153,13 @@ class Board(QMainWindow):
                     self.rematch_button.setEnabled(True)
 
     def _rematch(self) -> None:
-        """play another game"""
+        """Play another game"""
+
         self._register()
 
     def _exit(self) -> None:
-        """exit the game"""
+        """Exit the game"""
+
         req = {
             "action": "exit",
             "username": self.username,
