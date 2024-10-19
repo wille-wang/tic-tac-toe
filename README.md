@@ -32,22 +32,22 @@ pip install -r requirements.txt
 
 ```sh
 python src/server/main.py \
-  --host [hostname] \
-  --port [port]
+  [--host <hostname>] \
+  [--port <port>]
 ```
 
 - `host`: (_optional_) hostname of the server (default: `localhost`)
-- `post`: (_optional_) port number of the server (default: `44444`)
+- `port`: (_optional_) port number of the server (default: `44444`)
 
 3. Run the client(s):
 
 ```sh
 python src/client/main.py \
   --username <username> \
-  --host [hostname] \
-  --port [port]
+  [--host <hostname>] \
+  [--port <port>]
 ```
 
-- `username`: (**_compulsory_**) username for the player
+- `username`: (**_required_**) username for the player
 - `host`: (_optional_) hostname of the server (default: `localhost`)
 - `port`: (_optional_) port number of the server (default: `44444`)
