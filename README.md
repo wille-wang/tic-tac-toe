@@ -1,8 +1,8 @@
 # Distributed Tic-Tac-Toe
 
-This repository aims to build a distributed Tic-Tac-Toe game, which features a graphical user interface (GUI) built with [PySide6](https://pypi.org/project/PySide6/) for the client, and a thread-per-connection multithreaded server to handle game logic and communication between players.
+This repository contains a distributed Tic-Tac-Toe game featuring a graphical user interface (GUI) built with [PySide6](https://pypi.org/project/PySide6/) on the client side, and a multithreaded server with a thread-per-connection architecture to manage game logic and player communication.
 
-The server maintains state in-memory, without storing information in persistent storage.
+The server maintains the game state in memory without persistent storage.
 
 ![GUI](/img/gui.png)
 
@@ -10,45 +10,44 @@ The server maintains state in-memory, without storing information in persistent 
 
 - **client side**
   - `main.py`: entry point of the server side
-  - `board.py`: contains the `Board` class that provides the GUI for the Tic-Tac-Toe game, including game board interaction and status updates
-  - `client.py`: contains the `Client` class which manages communication with the server
+  - `board.py`: defines the `Board` class, responsible for rendering the GUI, managing game board interactions, and updating game status
+  - `client.py`: contains the `Client` class that handles communication with the server
 - **server side**
   - `main.py`: entry point of the client side
-  - `server.py`: contains the `Server` class that handles incoming client connections, processes game requests, and manages game state and player interactions
-  - `database.py`: contains the `Database` class that maintains player connections, waiting players, and ongoing games
+  - `server.py`: defines the `Server` class to handle client connections, process game-related requests, and manage the game state and player interactions
+  - `database.py`: contains the `Database` class, which manages player connections, waiting lists, and active games
   - `game.py`: contains the `Game` class that represents the game state, processes moves, and determines the game outcome
 
 ## Installation and Usage
 
-1. Clone this repository:
+1. Clone this repository and install dependencies:
 
 ```sh
 git clone https://github.com/wille-wang/tic-tac-toe
-cd {repo_dir}
-```
-
-2. Install dependencies:
-
-```sh
+cd tic-tac-toe
 pip install -r requirements.txt
 ```
 
-3. Run the server:
+2. Run the server:
 
 ```sh
-python server/main.py --host {hostname} --port {port}
+python src/server/main.py \
+  --host [hostname] \
+  --port [port]
 ```
 
-- `host`: (*optional*) hostname of the server (default: `localhost`)
-- `post`: (*optional*) port number of the server (default: `44444`)
+- `host`: (_optional_) hostname of the server (default: `localhost`)
+- `post`: (_optional_) port number of the server (default: `44444`)
 
-
-4. Run the client(s):
+3. Run the client(s):
 
 ```sh
-python client/main.py --username {username} --host {host} --port {port}
+python src/client/main.py \
+  --username <username> \
+  --host [hostname] \
+  --port [port]
 ```
 
-- `username`: (***compulsory***) username for the player
-- `host`: (*optional*) hostname of the server (default: `localhost`)
-- `port`: (*optional*) port number of the server (default: `44444`)
+- `username`: (**_compulsory_**) username for the player
+- `host`: (_optional_) hostname of the server (default: `localhost`)
+- `port`: (_optional_) port number of the server (default: `44444`)
